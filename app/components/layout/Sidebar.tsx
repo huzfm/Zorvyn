@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ArrowLeftRight, Lightbulb, X } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Lightbulb, X, ShieldCheck, Eye } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 interface SidebarProps {
   open: boolean;
@@ -17,6 +18,7 @@ const navItems = [
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { role } = useApp();
 
   return (
     <>
@@ -96,17 +98,40 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           })}
         </nav>
 
-        <div className="px-4 py-3.5 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-600 dark:text-zinc-300 shrink-0">
+        <div className="px-3 py-3.5 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5">
+          <div
+            className={[
+              'flex items-center gap-2 px-2.5 py-2 rounded-lg border',
+              role === 'admin'
+                ? 'bg-zinc-900 dark:bg-zinc-50 border-zinc-900 dark:border-zinc-50'
+                : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700',
+            ].join(' ')}
+          >
+            {role === 'admin' ? (
+              <ShieldCheck className="w-3.5 h-3.5 text-white dark:text-zinc-900 shrink-0" />
+            ) : (
+              <Eye className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
+            )}
+            <div className="min-w-0">
+              <p className={[
+                'text-xs font-semibold capitalize truncate',
+                role === 'admin' ? 'text-white dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300',
+              ].join(' ')}>
+                {role}
+              </p>
+              <p className={[
+                'text-[10px] truncate',
+                role === 'admin' ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-400 dark:text-zinc-600',
+              ].join(' ')}>
+                {role === 'admin' ? 'Full access' : 'View only'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-1">
+            <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[9px] font-bold text-zinc-500 dark:text-zinc-400 shrink-0">
               U
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
-                Personal Account
-              </p>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-600 truncate">Finance Dashboard</p>
-            </div>
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-600 truncate">Personal Account</p>
           </div>
         </div>
       </aside>

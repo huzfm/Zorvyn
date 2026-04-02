@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Inbox,
+  Lock,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency, formatDate } from '../../utils/helpers';
@@ -43,11 +44,9 @@ export default function TransactionTable() {
 
   function SortIcon({ field }: { field: SortField }) {
     if (filters.sortField !== field) return <ArrowUpDown className="w-3 h-3 opacity-40" />;
-    return filters.sortDir === 'asc' ? (
-      <ArrowUp className="w-3 h-3" />
-    ) : (
-      <ArrowDown className="w-3 h-3" />
-    );
+    return filters.sortDir === 'asc'
+      ? <ArrowUp className="w-3 h-3" />
+      : <ArrowDown className="w-3 h-3" />;
   }
 
   function handleEdit(t: Transaction) {
@@ -62,7 +61,7 @@ export default function TransactionTable() {
   }
 
   const thBtn =
-    'flex items-center gap-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors';
+    'flex items-center gap-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors whitespace-nowrap';
 
   return (
     <>
@@ -78,7 +77,7 @@ export default function TransactionTable() {
               className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
-              Export
+              <span className="hidden sm:inline">Export</span>
             </button>
             {exportOpen && (
               <>
@@ -101,7 +100,7 @@ export default function TransactionTable() {
             )}
           </div>
 
-          {role === 'admin' && (
+          {role === 'admin' ? (
             <button
               onClick={() => { setEditTarget(null); setModalOpen(true); }}
               className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 rounded-md transition-colors"
@@ -109,6 +108,14 @@ export default function TransactionTable() {
               <Plus className="w-3.5 h-3.5" />
               Add
             </button>
+          ) : (
+            <div
+              title="Switch to Admin role to add transactions"
+              className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-zinc-300 dark:text-zinc-600 bg-zinc-50 dark:bg-zinc-800/50 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-md cursor-not-allowed select-none"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              Add
+            </div>
           )}
         </div>
       </div>
@@ -117,20 +124,94 @@ export default function TransactionTable() {
         {filteredTransactions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-2.5">
             <Inbox className="w-10 h-10 text-zinc-300 dark:text-zinc-700" />
-            <p className="text-sm font-medium text-zinc-400 dark:text-zinc-600">
-              No transactions found
-            </p>
-            <p className="text-xs text-zinc-300 dark:text-zinc-700">
-              Try adjusting your filters
-            </p>
+            <p className="text-sm font-medium text-zinc-400 dark:text-zinc-600">No transactions found</p>
+            <p className="text-xs text-zinc-300 dark:text-zinc-700">Try adjusting your filters</p>
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="sm:hidden divide-y divide-zinc-100 dark:divide-zinc-800">
+              {paged.map(t => {
+                const color = CATEGORY_COLORS[t.category] ?? '#71717a';
+                return (
+                  <div key={t.id} className="px-4 py-3.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className="w-2 h-2 rounded-full shrink-0 mt-1.5"
+                          style={{ backgroundColor: color }}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                            {t.description}
+                          </p>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-0.5">
+                            {formatDate(t.date)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span
+                          className={[
+                            'text-sm font-semibold tabular-nums',
+                            t.type === 'income'
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-zinc-900 dark:text-zinc-100',
+                          ].join(' ')}
+                        >
+                          {t.type === 'income' ? '+' : '−'}
+                          {formatCurrency(t.amount)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-2 pl-4">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                          style={{ backgroundColor: `${color}18`, color }}
+                        >
+                          {t.category}
+                        </span>
+                        <span
+                          className={[
+                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize',
+                            t.type === 'income'
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                              : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
+                          ].join(' ')}
+                        >
+                          {t.type}
+                        </span>
+                      </div>
+                      {role === 'admin' && (
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            onClick={() => handleEdit(t)}
+                            className="w-7 h-7 flex items-center justify-center rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(t.id)}
+                            className="w-7 h-7 flex items-center justify-center rounded-md text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="hidden sm:block">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                    <th className="text-left px-4 py-3 w-32">
+                    <th className="text-left px-4 py-3 w-28">
                       <button onClick={() => handleSort('date')} className={thBtn}>
                         Date <SortIcon field="date" />
                       </button>
@@ -140,12 +221,12 @@ export default function TransactionTable() {
                         Description <SortIcon field="description" />
                       </button>
                     </th>
-                    <th className="text-left px-4 py-3 hidden sm:table-cell">
+                    <th className="text-left px-4 py-3 hidden md:table-cell">
                       <button onClick={() => handleSort('category')} className={thBtn}>
                         Category <SortIcon field="category" />
                       </button>
                     </th>
-                    <th className="text-left px-4 py-3 hidden md:table-cell">
+                    <th className="text-left px-4 py-3 hidden lg:table-cell">
                       <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                         Type
                       </span>
@@ -155,9 +236,7 @@ export default function TransactionTable() {
                         Amount <SortIcon field="amount" />
                       </button>
                     </th>
-                    {role === 'admin' && (
-                      <th className="px-4 py-3 w-16" />
-                    )}
+                    {role === 'admin' && <th className="px-4 py-3 w-20" />}
                   </tr>
                 </thead>
                 <tbody>
@@ -167,34 +246,31 @@ export default function TransactionTable() {
                       <tr
                         key={t.id}
                         className={[
-                          'group border-b border-zinc-50 dark:border-zinc-800/50 last:border-0',
+                          'border-b border-zinc-50 dark:border-zinc-800/50 last:border-0',
                           'hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors',
-                          i % 2 === 0 ? '' : 'bg-zinc-50/40 dark:bg-zinc-800/10',
+                          i % 2 !== 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/10' : '',
                         ].join(' ')}
                       >
                         <td className="px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                           {formatDate(t.date)}
                         </td>
-                        <td className="px-4 py-3 max-w-xs">
-                          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate block">
+                        <td className="px-4 py-3">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-[200px] lg:max-w-xs">
                             {t.description}
-                          </span>
-                          <span className="text-xs text-zinc-400 dark:text-zinc-600 sm:hidden">
+                          </p>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-600 md:hidden mt-0.5">
                             {t.category}
-                          </span>
+                          </p>
                         </td>
-                        <td className="px-4 py-3 hidden sm:table-cell">
+                        <td className="px-4 py-3 hidden md:table-cell">
                           <span
                             className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                            style={{
-                              backgroundColor: `${color}18`,
-                              color,
-                            }}
+                            style={{ backgroundColor: `${color}18`, color }}
                           >
                             {t.category}
                           </span>
                         </td>
-                        <td className="px-4 py-3 hidden md:table-cell">
+                        <td className="px-4 py-3 hidden lg:table-cell">
                           <span
                             className={[
                               'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize',
@@ -206,10 +282,10 @@ export default function TransactionTable() {
                             {t.type}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-3 text-right whitespace-nowrap">
                           <span
                             className={[
-                              'text-sm font-semibold tabular-nums whitespace-nowrap',
+                              'text-sm font-semibold tabular-nums',
                               t.type === 'income'
                                 ? 'text-emerald-600 dark:text-emerald-400'
                                 : 'text-zinc-900 dark:text-zinc-100',
@@ -221,7 +297,7 @@ export default function TransactionTable() {
                         </td>
                         {role === 'admin' && (
                           <td className="px-4 py-3">
-                            <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center justify-end gap-0.5">
                               <button
                                 onClick={() => handleEdit(t)}
                                 className="w-7 h-7 flex items-center justify-center rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
@@ -249,7 +325,7 @@ export default function TransactionTable() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-100 dark:border-zinc-800">
                 <p className="text-xs text-zinc-400 dark:text-zinc-600">
-                  Page {page} of {totalPages}
+                  {page} / {totalPages}
                 </p>
                 <div className="flex items-center gap-0.5">
                   <button
@@ -259,7 +335,7 @@ export default function TransactionTable() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                     const pg = i + 1;
                     return (
                       <button
