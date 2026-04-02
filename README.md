@@ -1,4 +1,4 @@
-# Zoryn — Finance Dashboard
+# Zoryn  Finance Dashboard
 
 A clean, interactive personal finance dashboard built with **Next.js 16**, **TypeScript**, **Tailwind CSS v4**, and **Recharts**. Track income and expenses, understand spending patterns, and manage transactions — all in a polished, responsive interface.
 
@@ -53,17 +53,6 @@ pnpm start
 - 8 insight cards: Top Spending Category, Savings Rate, Avg Daily Expense, Avg Monthly Expenses, Most Frequent Expense, Best Savings Month, Highest Spending Month, Transaction Count
 - **Monthly Comparison Bar Chart** — Income vs expenses grouped by month
 - **Category Breakdown** — Horizontal progress bars for all expense categories with amounts and percentages
-
-### Role-Based UI
-Toggle between roles using the **Admin / Viewer** switcher in the header:
-
-| Feature | Admin | Viewer |
-|---|---|---|
-| View all data | ✅ | ✅ |
-| Add transactions | ✅ | ❌ |
-| Edit transactions | ✅ | ❌ |
-| Delete transactions | ✅ | ❌ |
-| Export data | ✅ | ✅ |
 
 ### Dark Mode
 Click the moon/sun icon in the header to toggle dark mode. Preference is persisted to `localStorage`.
